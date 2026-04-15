@@ -4,12 +4,17 @@ import { Link } from "react-router";
 import BlogCard from "../components/BlogCard";
 import BlogCardSkeleton from "../components/BlogCardSkeleton";
 import Navbar from "../components/Navbar";
-import { axiosInstance } from "../lib/axios";
+import { axiosInstance2 } from "../lib/axios";
 import { useAuth } from "../stores/useAuth";
 import type { Blog } from "../types/blog";
+import type { PageableResponse } from "../types/pagination";
+import Pagination from "../components/Pagination";
+import { useState } from "react";
 
 function Home() {
   const { user } = useAuth();
+
+  const [page, setPage] = useState<number>(1);
 
   const {
     data: blogs,
@@ -17,12 +22,15 @@ function Home() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["blogs"],
+    queryKey: ["blogs", page],
     queryFn: async () => {
-      const response = await axiosInstance.get<Blog[]>(
-        "/data/Blogs?sortBy=%60created%60%20desc",
+      const { data } = await axiosInstance2.get<PageableResponse<Blog>>(
+        "/blogs",
+        {
+          params: { page, take: 6 },
+        },
       );
-      return response.data;
+      return data;
     },
   });
 
@@ -67,7 +75,7 @@ function Home() {
         ) : (
           <>
             {/* Empty State */}
-            {blogs && blogs.length === 0 && !error && (
+            {blogs && blogs.data.length === 0 && !error && (
               <div className="text-center py-16">
                 <div className="text-gray-400 mb-4">
                   <svg
@@ -103,12 +111,22 @@ function Home() {
             )}
 
             {/* Blog Cards */}
-            {blogs && blogs.length > 0 && (
+            {blogs && blogs.data.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {blogs.map((blog) => (
-                  <BlogCard key={blog.objectId} blog={blog} />
+                {blogs.data.map((blog) => (
+                  <BlogCard key={blog.id} blog={blog} />
                 ))}
               </div>
+            )}
+
+            {blogs?.meta && (
+              <Pagination
+                currentPage={blogs.meta.page}
+                totalPages={Math.ceil(blogs.meta.total / blogs.meta.take)}
+                onPageChange={(p) => {
+                  setPage(p);
+                }}
+              />
             )}
           </>
         )}
