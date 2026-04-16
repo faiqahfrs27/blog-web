@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -27,12 +29,20 @@ const router = createBrowserRouter([
     element: <Login />,
   },
   {
+    path: "/forgot-password",
+    element: <ForgotPassword />,
+  },
+  {
     path: "/create",
     element: <CreateBlog />,
   },
   {
     path: "/blogs/:slug",
     element: <BlogDetail />,
+  },
+  {
+    path: "/reset-password/:token",
+    element: <ResetPassword />,
   },
 ]);
 
